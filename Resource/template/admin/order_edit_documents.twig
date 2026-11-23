@@ -1,0 +1,51 @@
+<script>
+    $(function () {
+        $('.c-primaryCol .card').last().before($('#invoice_receipt_mail').detach());
+    });
+</script>
+<div id="invoice_receipt_mail" class="card rounded border-0 mb-4">
+    <div class="card-header">
+        <div class="row">
+            <div class="col-8"><span class="card-title">請求書・領収書</span></div>
+            <div class="col-4 text-end"><a data-bs-toggle="collapse" href="#invoiceReceiptMailArea" aria-expanded="false" aria-controls="invoiceReceiptMailArea"><i class="fa fa-angle-up fa-lg"></i></a></div>
+        </div>
+    </div>
+    <div class="collapse show ec-cardCollapse" id="invoiceReceiptMailArea">
+        <div class="card-body">
+            <div class="row mb-3">
+                <div class="col-2"><span>請求書</span></div>
+                <div class="col">
+                    <a class="btn btn-ec-regular btn-sm" href="{{ url('invoice_receipt_mail_admin_download', {'type': 'invoice', 'id': Order.id}) }}" target="_blank">PDF を表示</a>
+                    <a class="btn btn-ec-regular btn-sm" href="{{ url('invoice_receipt_mail_admin_send', {'type': 'invoice', 'id': Order.id}) }}" {{ csrf_token_for_anchor() }} data-method="post" data-confirm="true" data-message="{{ Order.email }} に請求書をメールで送ります。よろしいですか？">メールで送る</a>
+                    {% if not InvoiceReceiptMailTarget.invoice %}<span class="text-muted small ms-2">（この支払方法は自動添付の対象外です）</span>{% endif %}
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-2"><span>領収書</span></div>
+                <div class="col">
+                    <a class="btn btn-ec-regular btn-sm" href="{{ url('invoice_receipt_mail_admin_download', {'type': 'receipt', 'id': Order.id}) }}" target="_blank">PDF を表示</a>
+                    <a class="btn btn-ec-regular btn-sm" href="{{ url('invoice_receipt_mail_admin_send', {'type': 'receipt', 'id': Order.id}) }}" {{ csrf_token_for_anchor() }} data-method="post" data-confirm="true" data-message="{{ Order.email }} に領収書をメールで送ります。送信済みの場合は「再発行」と表示されます。よろしいですか？">メールで送る</a>
+                    {% if not InvoiceReceiptMailTarget.receipt %}<span class="text-muted small ms-2">（この支払方法は自動送信の対象外です）</span>{% endif %}
+                </div>
+            </div>
+            {% if InvoiceReceiptMailLogs %}
+                <table class="table table-sm small mb-0">
+                    <thead><tr><th>送信日時</th><th>帳票</th><th>番号</th><th>送信方法</th><th>送信先・宛名</th></tr></thead>
+                    <tbody>
+                    {% for Log in InvoiceReceiptMailLogs %}
+                        <tr>
+                            <td>{{ Log.createDate|date_min }}</td>
+                            <td>{{ Log.documentType == 'invoice' ? '請求書' : '領収書' }}</td>
+                            <td>{{ Log.documentNo }}</td>
+                            <td>{{ {'auto': '自動', 'manual': '手動', 'mypage': 'マイページ'}[Log.sendType] ?? Log.sendType }}</td>
+                            <td>{% if Log.sendType == 'mypage' %}{{ Log.addressee }}{% if Log.proviso %}（但し {{ Log.proviso }}）{% endif %}{% else %}{{ Log.sentTo }}{% endif %}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p class="text-muted small mb-0">まだ送信・発行していません。</p>
+            {% endif %}
+        </div>
+    </div>
+</div>

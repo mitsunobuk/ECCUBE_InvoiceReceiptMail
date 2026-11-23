@@ -1,0 +1,22 @@
+{% autoescape false %}
+{{ Order.name01 }} {{ Order.name02 }} 様
+
+{% if header %}{{ header }}{% else %}この度は{{ BaseInfo.shop_name }}をご利用いただき、誠にありがとうございます。
+ご入金を確認いたしましたので、領収書を PDF にてお送りいたします。{% endif %}
+
+{% if reissue %}※ 本メールの領収書は再発行分です。{% endif %}
+
+************************************************
+　ご注文内容
+************************************************
+ご注文番号：{{ Order.order_no }}
+ご注文日時：{{ Order.order_date|date_sec }}
+お支払方法：{{ Order.payment_method }}
+お支払い合計：{{ Order.payment_total|price }}
+
+添付ファイル：receipt_{{ Order.order_no }}.pdf
+
+============================================
+{{ BaseInfo.shop_name }}
+{{ BaseInfo.email01 }}
+{% endautoescape %}

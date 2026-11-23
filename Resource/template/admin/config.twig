@@ -1,0 +1,137 @@
+{% extends '@admin/default_frame.twig' %}
+
+{% set menus = ['store', 'plugin', 'plugin_list'] %}
+
+{% block title %}{{ 'invoice_receipt_mail.admin.config.title'|trans }}{% endblock %}
+{% block sub_title %}{{ 'invoice_receipt_mail.admin.config.sub_title'|trans }}{% endblock %}
+
+{% form_theme form '@admin/Form/bootstrap_4_horizontal_layout.html.twig' %}
+
+{% block main %}
+    <form method="post" action="{{ url('invoice_receipt_mail_admin_config') }}" enctype="multipart/form-data">
+        {{ form_widget(form._token) }}
+        <div class="c-contentsArea__cols">
+            <div class="c-contentsArea__primaryCol">
+                <div class="c-primaryCol">
+                    <div class="card rounded border-0 mb-4">
+                        <div class="card-header"><span class="card-title">送信する支払方法</span></div>
+                        <div class="card-body">
+                            <div class="row mb-3">
+                                <div class="col-3"><label>請求書を注文メールに添付</label></div>
+                                <div class="col">
+                                    {{ form_widget(form.invoice_payment_ids) }}
+                                    {{ form_errors(form.invoice_payment_ids) }}
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-3"><label>入金済みになったら領収書を送信</label></div>
+                                <div class="col">
+                                    {{ form_widget(form.receipt_payment_ids) }}
+                                    {{ form_errors(form.receipt_payment_ids) }}
+                                    <p class="text-muted small mt-2">受注の対応状況が「入金済み」に変わったときに 1 回だけ自動で送ります（管理画面での変更・一括変更、決済プラグインによる変更のいずれも対象）。入金済みを飛ばして「発送済み」にした場合も、未送信なら送ります。</p>
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-3"><label>注文時に支払いが完了する支払方法</label></div>
+                                <div class="col">
+                                    {{ form_widget(form.prepaid_payment_ids) }}
+                                    {{ form_errors(form.prepaid_payment_ids) }}
+                                    <p class="text-muted small mt-2">クレジットカード決済など。ここで選んだ支払方法の請求書には「お支払済み」とお支払日を表示し、備考（振込先など）は出しません。</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card rounded border-0 mb-4">
+                        <div class="card-header"><span class="card-title">帳票の内容</span></div>
+                        <div class="card-body">
+                            <div class="row mb-3">
+                                <div class="col-3"><label>請求書の備考</label></div>
+                                <div class="col">
+                                    {{ form_widget(form.invoice_note, {'attr': {'rows': 5, 'placeholder': '例）お振込先：○○銀行 ○○支店 普通 1234567 カ）○○\nお支払期限：ご注文日から 7 日以内'}}) }}
+                                    {{ form_errors(form.invoice_note) }}
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-3"><label>領収書の但し書き</label></div>
+                                <div class="col">
+                                    {{ form_widget(form.receipt_proviso) }}
+                                    {{ form_errors(form.receipt_proviso) }}
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-3"><label>社印</label></div>
+                                <div class="col">
+                                    {% if stamp %}
+                                        <div class="mb-2"><img src="{{ stamp }}" alt="社印" style="width:96px;height:96px;object-fit:contain;border:1px solid #ddd;"></div>
+                                        {{ form_widget(form.stamp_delete) }}
+                                    {% endif %}
+                                    {{ form_widget(form.stamp_image, {'attr': {'accept': 'image/png,image/jpeg'}}) }}
+                                    {{ form_errors(form.stamp_image) }}
+                                    <p class="text-muted small mt-2">請求書・領収書の発行者欄の右に押します（約 22mm 角）。背景が透明な PNG がおすすめです（白背景でも文字が透けて見えるように重ねます）。2MB まで。</p>
+                                </div>
+                            </div>
+                            <p class="text-muted small">発行者の会社名・住所・電話番号・適格請求書発行事業者の登録番号は「設定 &gt; 店舗設定 &gt; 基本設定」の値を使います。</p>
+                        </div>
+                    </div>
+                    <div class="card rounded border-0 mb-4">
+                        <div class="card-header"><span class="card-title">マイページ</span></div>
+                        <div class="card-body">
+                            <div class="row mb-3">
+                                <div class="col-3"><label>領収書のダウンロード</label></div>
+                                <div class="col">
+                                    {{ form_widget(form.mypage_receipt) }}
+                                    {{ form_widget(form.mypage_receipt_editable) }}
+                                    <p class="text-muted small mt-2">会員のお客様が、注文履歴の詳細画面から領収書 PDF をダウンロードできます。対象は「入金済みになったら領収書を送信」で選んだ支払方法の、入金済み・発送済みの注文です。2 回目以降（メールで送信済みの場合を含む）は「再発行」と表示されます。ダウンロードの記録は受注編集画面に残ります。</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card rounded border-0 mb-4">
+                        <div class="card-header"><span class="card-title">メール</span></div>
+                        <div class="card-body">
+                            <div class="row mb-3">
+                                <div class="col-3"><label>領収書メールの件名</label></div>
+                                <div class="col">
+                                    {{ form_widget(form.receipt_mail_subject) }}
+                                    {{ form_errors(form.receipt_mail_subject) }}
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-3"><label>領収書メールの本文（冒頭）</label></div>
+                                <div class="col">
+                                    {{ form_widget(form.receipt_mail_header, {'attr': {'rows': 6}}) }}
+                                    {{ form_errors(form.receipt_mail_header) }}
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-3"><label>請求書を再送するメールの件名</label></div>
+                                <div class="col">
+                                    {{ form_widget(form.invoice_mail_subject) }}
+                                    {{ form_errors(form.invoice_mail_subject) }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="c-conversionArea">
+            <div class="c-conversionArea__container">
+                <div class="row justify-content-between align-items-center">
+                    <div class="col-6">
+                        <div class="c-conversionArea__leftBlockItem">
+                            <a class="c-baseLink" href="{{ url('admin_store_plugin') }}"><i class="fa fa-backward" aria-hidden="true"></i><span>プラグイン一覧</span></a>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="row align-items-center justify-content-end">
+                            <div class="col-auto">
+                                <button class="btn btn-ec-conversion px-5" type="submit">{{ 'admin.common.registration'|trans }}</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+{% endblock %}

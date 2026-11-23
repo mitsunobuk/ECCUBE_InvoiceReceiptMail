@@ -1,0 +1,56 @@
+{#
+マイページ 注文履歴詳細の「領収書」欄。
+snippet はページ末尾に出力されるので、「メール配信履歴一覧」の前に移す。
+
+ボタンは type="button" にして JS で送信する。テーマの function.js は submit ボタンを押すと
+読み込み中のオーバーレイを出すが、PDF は別タブで開くので元の画面が遷移せず、
+オーバーレイが残って画面が白くなるため。
+#}
+<div id="invoice_receipt_mail_mypage" class="ec-orderReceipt" style="margin-bottom:30px;">
+    <div class="ec-rectHeading">
+        <h2>領収書</h2>
+    </div>
+    <form method="post" action="{{ url('invoice_receipt_mail_mypage_receipt', {'order_no': Order.order_no}) }}" target="_blank">
+        {{ form_widget(InvoiceReceiptMailForm._token) }}
+        {% if InvoiceReceiptMailEditable %}
+            <dl class="ec-definitions" style="display:block;margin-bottom:12px;">
+                <dt style="display:block;margin-bottom:4px;">宛名</dt>
+                <dd style="display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;">
+                    <span class="ec-input" style="flex:1 1 240px;margin:0;">{{ form_widget(InvoiceReceiptMailForm.addressee) }}</span>
+                    <span class="ec-radio">{{ form_widget(InvoiceReceiptMailForm.honorific) }}</span>
+                </dd>
+            </dl>
+            <dl class="ec-definitions" style="display:block;margin-bottom:16px;">
+                <dt style="display:block;margin-bottom:4px;">但し書き</dt>
+                <dd style="display:flex;align-items:center;gap:8px;">
+                    <span>但し</span>
+                    <span class="ec-input" style="flex:1 1 auto;margin:0;">{{ form_widget(InvoiceReceiptMailForm.proviso) }}</span>
+                </dd>
+            </dl>
+        {% else %}
+            {{ form_widget(InvoiceReceiptMailForm.addressee, {'type': 'hidden'}) }}
+            {% for child in InvoiceReceiptMailForm.honorific %}{% if child.vars.checked %}<input type="hidden" name="{{ InvoiceReceiptMailForm.honorific.vars.full_name }}" value="{{ child.vars.value }}">{% endif %}{% do child.setRendered %}{% endfor %}
+            {{ form_widget(InvoiceReceiptMailForm.proviso, {'type': 'hidden'}) }}
+        {% endif %}
+        <button type="button" class="ec-blockBtn--action" id="invoice_receipt_mail_download" style="max-width:360px;">領収書をダウンロード（PDF）</button>
+        <p style="font-size:12px;margin-top:8px;">2 回目以降のダウンロードや、メールでお送りした領収書がある場合は「再発行」と表示されます。</p>
+    </form>
+</div>
+<script>
+    $(function () {
+        var $receipt = $('#invoice_receipt_mail_mypage');
+        var $mails = $('.ec-orderMails');
+        if ($mails.length) {
+            $mails.first().before($receipt.detach());
+        } else {
+            $('.ec-orderRole__detail').first().append($receipt.detach());
+        }
+        $('#invoice_receipt_mail_download').on('click', function () {
+            var form = $receipt.find('form').get(0);
+            if (typeof form.reportValidity === 'function' && !form.reportValidity()) {
+                return;
+            }
+            form.submit();
+        });
+    });
+</script>

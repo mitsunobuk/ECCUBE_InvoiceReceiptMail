@@ -1,0 +1,6 @@
+invoice_receipt_mail.admin.config.title: 請求書・領収書メール
+invoice_receipt_mail.admin.config.sub_title: プラグイン設定
+invoice_receipt_mail.admin.sent_invoice: 請求書をメールで送信しました。
+invoice_receipt_mail.admin.sent_receipt: 領収書をメールで送信しました。
+invoice_receipt_mail.admin.send_failed: メールの送信に失敗しました。ログを確認してください。
+invoice_receipt_mail.mypage.invalid: 領収書の宛名・但し書きを入力してください（宛名は60文字、但し書きは40文字まで）。

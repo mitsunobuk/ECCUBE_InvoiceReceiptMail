@@ -1,0 +1,13 @@
+{
+    "name": "ec-cube/invoicereceiptmail",
+    "version": "1.1.2",
+    "description": "請求書・領収書 自動メール送信プラグイン",
+    "type": "eccube-plugin",
+    "license": "GPL-2.0-only",
+    "require": {
+        "ec-cube/plugin-installer": "^2.0"
+    },
+    "extra": {
+        "code": "InvoiceReceiptMail"
+    }
+}
